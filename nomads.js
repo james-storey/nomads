@@ -1,6 +1,7 @@
 var Program = function() {
 	var camera, scene, renderer;
-	var terrainMesh;
+	var cameraCenter, cameraSpeed, cameraHandle;
+	var terrainMesh, objMesh;
 	var world, body, mass, shape, timeStep = 1/60;
 
 	that = {};
@@ -11,6 +12,12 @@ var Program = function() {
 		camera.translateZ(100);
 		camera.translateY(100);
 		camera.lookAt(new THREE.Vector3( 0, 0, 0 ));
+		cameraCenter = new THREE.Vector3( 0, 0, 0 );
+		cameraSpeed = 0.5;
+		cameraHandle = new THREE.Object3D();
+		cameraHandle.translateZ(100);
+		cameraHandle.translateY(100);
+		cameraHandle.add(camera);
 		scene.add(camera);
 
 		renderer = Detector.webgl? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
@@ -19,11 +26,11 @@ var Program = function() {
 
 		var viewport = renderer.domElement;
 		document.body.appendChild(viewport);
-		renderer.domElement.addEventListener('resize', onResize, false);
-		renderer.domElement.addEventListener('mousedown', mouseDown, false);
-		renderer.domElement.addEventListener('mouseup', mouseDown, false);
-		renderer.domElement.addEventListener('keydown', handleKey.down, false);
-		renderer.domElement.addEventListener('keyup', handleKey.up, false);
+		window.addEventListener('resize', onResize, false);
+		window.addEventListener('mousedown', mouseDown, false);
+		window.addEventListener('mouseup', mouseUp, false);
+		window.addEventListener('keydown', handleKey.down, false);
+		window.addEventListener('keyup', handleKey.up, false);
 
 		// init geo
 
@@ -32,13 +39,27 @@ var Program = function() {
 			var v = planeGeo.vertices[i];
 			v.z = Math.sin(v.x/10)*5 - Math.cos(v.y/10)*5;
 		};
+		planeGeo.computeFaceNormals();
+		planeGeo.computeVertexNormals();
 
-		var mat = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true});
+		var mat = new THREE.MeshLambertMaterial({color: 0xffffff});
 		terrainMesh = new THREE.Mesh(planeGeo, mat);
 		terrainMesh.position = new THREE.Vector3(0, 0, 0);
 		terrainMesh.rotateX(-Math.PI/2);
 		//terrainMesh.rotateY(1);
 		scene.add(terrainMesh);
+
+		var aL = new THREE.AmbientLight( 0x404040 );
+		var dL = new THREE.DirectionalLight({color: 0xffffff});
+		dL.position = new THREE.Vector3( 1, 1, 1 );
+		scene.add(aL);
+		scene.add(dL);
+
+		var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
+		var objGeo = new THREE.CubeGeometry( 10, 10, 10, 1, 1, 1);
+		objMesh = new THREE.Mesh(objGeo, objMat);
+		objMesh.position.y = 5;
+		scene.add(objMesh);
 
 		/*var helper = new THREE.AxisHelper();
 		helper.scale = new THREE.Vector3(10, 10, 10);
@@ -63,6 +84,7 @@ var Program = function() {
 	var update = function() {
 		requestAnimationFrame( update );
         updatePhysics();
+        handleKey.update();
         render();
 	};
 
@@ -77,7 +99,7 @@ var Program = function() {
 
 	};
 
-	var onResize = function(event) {
+	var onResize = function() {
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
 
@@ -96,15 +118,42 @@ var Program = function() {
 		hold: {},
 
 		down: function(event){
-			hold[event.keyCode] = true;
+			handleKey.hold[event.keyCode] = true;
 		},
 
 		up: function(event){
-			hold[event.keyCode] = false;
+			handleKey.hold[event.keyCode] = false;
 		},
 
 		update: function() {
-
+			if (handleKey.hold["W".charCodeAt(0)] === true)
+			{
+				camera.position.z += -cameraSpeed;
+				cameraCenter.z += -cameraSpeed;
+			}
+			if (handleKey.hold["S".charCodeAt(0)] === true)
+			{
+				camera.position.z += cameraSpeed;
+				cameraCenter.z += cameraSpeed;
+			}
+			if (handleKey.hold["A".charCodeAt(0)] === true)
+			{
+				camera.position.x += -cameraSpeed;
+				cameraCenter.x += -cameraSpeed;
+			}
+			if (handleKey.hold["D".charCodeAt(0)] === true)
+			{
+				camera.position.x += cameraSpeed;
+				cameraCenter.x += cameraSpeed;
+			}
+			if(handleKey.hold["Q".charCodeAt(0)] === true)
+			{
+				// orbit CCW
+			}
+			if(handleKey.hold["E".charCodeAt(0)] === true)
+			{
+				// orbit CW
+			}
 		} 
 	}
 
