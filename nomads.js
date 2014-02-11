@@ -1,8 +1,10 @@
 var Program = function() {
 	var camera, scene, renderer;
-	var cameraCenter, cameraSpeed, cameraHandle;
+	var cameraCenter, cameraSpeed, projector;
 	var terrainMesh, objMesh;
 	var world, body, mass, shape, timeStep = 1/60;
+	var selected = [];
+	var selectableObjects = [];
 
 	that = {};
 
@@ -14,11 +16,9 @@ var Program = function() {
 		camera.lookAt(new THREE.Vector3( 0, 0, 0 ));
 		cameraCenter = new THREE.Vector3( 0, 0, 0 );
 		cameraSpeed = 0.5;
-		cameraHandle = new THREE.Object3D();
-		cameraHandle.translateZ(100);
-		cameraHandle.translateY(100);
-		cameraHandle.add(camera);
 		scene.add(camera);
+
+		projector = new THREE.Projector();
 
 		renderer = Detector.webgl? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
 		renderer.setClearColor(0x8096da, 1);
@@ -27,18 +27,18 @@ var Program = function() {
 		var viewport = renderer.domElement;
 		document.body.appendChild(viewport);
 		window.addEventListener('resize', onResize, false);
-		window.addEventListener('mousedown', mouseDown, false);
-		window.addEventListener('mouseup', mouseUp, false);
+		window.addEventListener('mousedown', handleMouse.down, false);
+		window.addEventListener('mouseup', handleMouse.up, false);
 		window.addEventListener('keydown', handleKey.down, false);
 		window.addEventListener('keyup', handleKey.up, false);
 
 		// init geo
 
 		var planeGeo = new THREE.PlaneGeometry(100, 100, 10, 10);
-		for (var i = planeGeo.vertices.length - 1; i >= 0; i--) {
-			var v = planeGeo.vertices[i];
-			v.z = Math.sin(v.x/10)*5 - Math.cos(v.y/10)*5;
-		};
+		//for (var i = planeGeo.vertices.length - 1; i >= 0; i--) {
+		//	var v = planeGeo.vertices[i];
+		//	v.z = Math.sin(v.x/10)*5 - Math.cos(v.y/10)*5;
+		//};
 		planeGeo.computeFaceNormals();
 		planeGeo.computeVertexNormals();
 
@@ -60,6 +60,7 @@ var Program = function() {
 		objMesh = new THREE.Mesh(objGeo, objMat);
 		objMesh.position.y = 5;
 		scene.add(objMesh);
+		selectableObjects.push(objMesh);
 
 		/*var helper = new THREE.AxisHelper();
 		helper.scale = new THREE.Vector3(10, 10, 10);
@@ -106,12 +107,31 @@ var Program = function() {
 		renderer.setSize(window.innerWidth, window.innerHeight);
 	};
 
-	var mouseDown = function(event) {
+	var handleMouse = {
+		hold: {},
 
-	};
+		down: function(event) {
+			// record position
+			handleMouse.hold['down'] = new THREE.Vector2(event.clientX, event.clientY); 
+		},
 
-	var mouseUp = function(event) {
+		up: function(event) {
+			var down = handleMouse.hold['down'];
+			var clickZone = 0.5;
+			if (down.x - event.clientX < clickZone && down.y - event.clientY < clickZone) {
+				// raycast select
+				var vector = new THREE.Vector3((down.x / window.innerWidth) * 2 - 1, 
+					- (down.y / window.innerHeight) * 2 + 1, 0.5);
+				projector.unprojectVector(vector, camera);
 
+				var raycaster = new THREE.Raycaster(camera.position,
+					vector.sub(camera.position).normalize());
+				var intersects = raycaster.intersectObjects(selectableObjects);
+			}
+			else {
+				// bounded select
+			}
+		}
 	};
 
 	var handleKey = {
@@ -146,15 +166,32 @@ var Program = function() {
 				camera.position.x += cameraSpeed;
 				cameraCenter.x += cameraSpeed;
 			}
+
+			var rotateCamera = function(CCW) {
+				var dir = 1, d;
+				if(CCW !== true){
+					dir = -1;
+				}
+				d = new THREE.Vector2(camera.position.x - cameraCenter.x, camera.position.z - cameraCenter.z);
+				rotSpeed = cameraSpeed * 0.05;
+				camera.position.x = cameraCenter.x + d.x * Math.cos(rotSpeed) - 
+					d.y*Math.sin(rotSpeed) * dir;
+				camera.position.z = cameraCenter.z + d.x * Math.sin(rotSpeed) * dir + 
+					d.y*Math.cos(rotSpeed);
+			};
 			if(handleKey.hold["Q".charCodeAt(0)] === true)
 			{
 				// orbit CCW
+				rotateCamera(true);
+				camera.lookAt(cameraCenter);
 			}
 			if(handleKey.hold["E".charCodeAt(0)] === true)
 			{
 				// orbit CW
+				rotateCamera(false);
+				camera.lookAt(cameraCenter);
 			}
-		} 
+		}
 	}
 
 	that.init = init;
