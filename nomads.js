@@ -111,14 +111,14 @@ var Program = function() {
 		hold: {},
 
 		down: function(event) {
-			// record position
 			handleMouse.hold['down'] = new THREE.Vector2(event.clientX, event.clientY); 
 		},
 
 		up: function(event) {
 			var down = handleMouse.hold['down'];
 			var clickZone = 0.5;
-			if (down.x - event.clientX < clickZone && down.y - event.clientY < clickZone) {
+			if (Math.abs(down.x - event.clientX) < clickZone && 
+				Math.abs(down.y - event.clientY) < clickZone) {
 				// raycast select
 				var vector = new THREE.Vector3((down.x / window.innerWidth) * 2 - 1, 
 					- (down.y / window.innerHeight) * 2 + 1, 0.5);
@@ -130,6 +130,21 @@ var Program = function() {
 			}
 			else {
 				// bounded select
+				for(var oi = 0, ol = selectableObjects.length; oi < ol; i ++){
+					// project center of object to screen
+					var obj = selectableObjects[oi];
+					var posCopy = new THREE.Vector3(0,0,0);
+					posCopy.copy(obj.position);
+
+					// normalized centered coords
+					var screenCoord = projector.projectVector(posCopy, camera);
+					
+					// fudge with bounding sphere radius
+					// if inside bounds, select
+				}
+				
+
+				
 			}
 		}
 	};
