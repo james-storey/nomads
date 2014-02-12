@@ -117,33 +117,57 @@ var Program = function() {
 		up: function(event) {
 			var down = handleMouse.hold['down'];
 			var clickZone = 0.5;
+			selected.length = 0;
 			if (Math.abs(down.x - event.clientX) < clickZone && 
 				Math.abs(down.y - event.clientY) < clickZone) {
 				// raycast select
 				var vector = new THREE.Vector3((down.x / window.innerWidth) * 2 - 1, 
-					- (down.y / window.innerHeight) * 2 + 1, 0.5);
+					-(down.y / window.innerHeight) * 2 + 1, 0.5);
 				projector.unprojectVector(vector, camera);
 
 				var raycaster = new THREE.Raycaster(camera.position,
 					vector.sub(camera.position).normalize());
 				var intersects = raycaster.intersectObjects(selectableObjects);
+				selected.push(intersects[0]);
 			}
 			else {
 				// bounded select
-				for(var oi = 0, ol = selectableObjects.length; oi < ol; i ++){
+				for(var oi = 0, ol = selectableObjects.length; oi < ol; oi ++){
 					// project center of object to screen
 					var obj = selectableObjects[oi];
-					var posCopy = new THREE.Vector3(0,0,0);
+					var posCopy = new THREE.Vector3();
 					posCopy.copy(obj.position);
 
 					// normalized centered coords
+					var first = new THREE.Vector2((down.x / window.innerWidth) * 2 - 1,
+						-(down.y / window.innerHeight) * 2 + 1);
+					var second = new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1,
+						-(event.clientY/window.innerHeight) * 2 + 1);
+					var min = new THREE.Vector2(Math.min(first.x, second.x), Math.min(first.y, second.y));
+					var max = new THREE.Vector2(Math.max(first.x, second.x), Math.max(first.y, second.y));
+					var selectBox = new THREE.Box2(min, max);
+					
 					var screenCoord = projector.projectVector(posCopy, camera);
+					//get size of projected bounding sphere
+					var gC = new THREE.Vector3();
+					gC.copy(obj.position);
+					gC.sub(camera.position);
+					var gCircle = (new THREE.Vector3()).crossVectors(gC, new THREE.Vector3(0,1,0)).normalize();
+					gCircle.multiplyScalar(obj.geometry.boundingSphere.radius * 2);
+					gCircle.add(obj.position);
+					var gCircleScreen = projector.projectVector(gCircle, camera);
+					var objBoxSize = (new THREE.Vector2(gCircleScreen.x, gCircleScreen.y)).sub(screenCoord).length();
+
+					var objBox = new THREE.Box2();
+					objBox.setFromCenterAndSize(new THREE.Vector2(screenCoord.x, screenCoord.y), 
+						new THREE.Vector2(objBoxSize, objBoxSize));
 					
 					// fudge with bounding sphere radius
-					// if inside bounds, select
+					if (selectBox.isIntersectionBox(objBox) || selectBox.containsBox(objBox)){
+						// inside bounds, add to selection
+						selected.push(obj);
+					}
 				}
-				
-
 				
 			}
 		}
