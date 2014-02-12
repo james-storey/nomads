@@ -1,12 +1,50 @@
+var SelectableObject = function(mesh, pBody) {
+	var selected = false;
+	var Mesh, geometry, material;
+
+	var that = {};
+
+	if(mesh instanceof THREE.Mesh) {
+		Mesh = mesh;
+		geometry = Mesh.geometry;
+		material = Mesh.material;
+	}
+
+	var update = function() {
+		if(selected) {
+			material.emissive.setHex(0xff0000);
+		}
+		else {
+			material.emissive.setHex(0x000000);
+		}
+	}
+
+	var select = function() {
+		selected = true;
+	}
+	var deselect = function() {
+		selected = false;
+	}
+
+	that.Mesh = Mesh;
+	that.geometry = geometry;
+	that.material = material;
+	that.update = update;
+	that.select = select;
+	that.deselect = deselect;
+
+	return that;
+}
+
 var Program = function() {
 	var camera, scene, renderer;
 	var cameraCenter, cameraSpeed, projector;
-	var terrainMesh, objMesh;
+	var terrainMesh;
 	var world, body, mass, shape, timeStep = 1/60;
 	var selected = [];
 	var selectableObjects = [];
 
-	that = {};
+	var that = {};
 
 	var initThree = function() {
 		scene = new THREE.Scene();
@@ -57,10 +95,11 @@ var Program = function() {
 
 		var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
 		var objGeo = new THREE.CubeGeometry( 10, 10, 10, 1, 1, 1);
-		objMesh = new THREE.Mesh(objGeo, objMat);
+		var objMesh = new THREE.Mesh(objGeo, objMat);
 		objMesh.position.y = 5;
 		scene.add(objMesh);
-		selectableObjects.push(objMesh);
+
+		selectableObjects.push(new SelectableObject(objMesh));
 
 		/*var helper = new THREE.AxisHelper();
 		helper.scale = new THREE.Vector3(10, 10, 10);
@@ -86,6 +125,7 @@ var Program = function() {
 		requestAnimationFrame( update );
         updatePhysics();
         handleKey.update();
+        selectableObjects.forEach(function(obj){obj.update();});
         render();
 	};
 
@@ -117,7 +157,9 @@ var Program = function() {
 		up: function(event) {
 			var down = handleMouse.hold['down'];
 			var clickZone = 0.5;
-			selected.length = 0;
+			for (var sO = selected.length - 1; sO >= 0; sO -= 1) {
+				(selected.pop()).deselect();
+			}
 			if (Math.abs(down.x - event.clientX) < clickZone && 
 				Math.abs(down.y - event.clientY) < clickZone) {
 				// raycast select
@@ -127,14 +169,22 @@ var Program = function() {
 
 				var raycaster = new THREE.Raycaster(camera.position,
 					vector.sub(camera.position).normalize());
-				var intersects = raycaster.intersectObjects(selectableObjects);
-				selected.push(intersects[0]);
+				var intersect = [];
+				var sO = 0, intersectIndex;
+				for (sO = selectableObjects.length - 1; sO >= 0 && intersect.length < 1; sO -= 1) {
+					intersect = raycaster.intersectObject(selectableObjects[sO].Mesh);
+					intersectIndex = sO;
+				}
+				if (intersect.length > 0) {
+					selected.push(selectableObjects[intersectIndex]);
+					selectableObjects[intersectIndex].select();
+				}
 			}
 			else {
 				// bounded select
-				for(var oi = 0, ol = selectableObjects.length; oi < ol; oi ++){
+				for (var oi = 0, ol = selectableObjects.length; oi < ol; oi ++){
 					// project center of object to screen
-					var obj = selectableObjects[oi];
+					var obj = selectableObjects[oi].Mesh;
 					var posCopy = new THREE.Vector3();
 					posCopy.copy(obj.position);
 
@@ -165,11 +215,14 @@ var Program = function() {
 					// fudge with bounding sphere radius
 					if (selectBox.isIntersectionBox(objBox) || selectBox.containsBox(objBox)){
 						// inside bounds, add to selection
-						selected.push(obj);
+						selected.push(selectableObjects[oi]);
+						selectableObjects[oi].select();
+
 					}
-				}
-				
+				}	
 			}
+
+			handleMouse.hold['down'] = null;
 		}
 	};
 
