@@ -43,6 +43,7 @@ var Program = function() {
 	var world, body, mass, shape, timeStep = 1/60;
 	var selected = [];
 	var selectableObjects = [];
+	var selectBoxElem;
 
 	var that = {};
 
@@ -69,6 +70,7 @@ var Program = function() {
 		window.addEventListener('mouseup', handleMouse.up, false);
 		window.addEventListener('keydown', handleKey.down, false);
 		window.addEventListener('keyup', handleKey.up, false);
+		window.addEventListener('mousemove', handleMouse.move, false);
 
 		// init geo
 
@@ -117,6 +119,7 @@ var Program = function() {
 	};
 
 	var init = function() {
+		selectBoxElem = document.getElementById("select-box");
 		initThree();
 		initCannon();
 	};
@@ -125,6 +128,7 @@ var Program = function() {
 		requestAnimationFrame( update );
         updatePhysics();
         handleKey.update();
+        handleMouse.update();
         selectableObjects.forEach(function(obj){obj.update();});
         render();
 	};
@@ -151,7 +155,11 @@ var Program = function() {
 		hold: {},
 
 		down: function(event) {
-			handleMouse.hold['down'] = new THREE.Vector2(event.clientX, event.clientY); 
+			handleMouse.hold['down'] = new THREE.Vector2(event.clientX, event.clientY);
+			// anchor selection aid
+			selectBoxElem.style.top = event.clientY;
+			selectBoxElem.style.left = event.clientX;
+			selectBoxElem.style.visibility = "visible";
 		},
 
 		up: function(event) {
@@ -221,8 +229,23 @@ var Program = function() {
 					}
 				}	
 			}
-
+			selectBoxElem.style.visibility = "hidden";
 			handleMouse.hold['down'] = null;
+		},
+
+		move: function(event) {
+			handleMouse.hold['mouseX'] = event.clientX;
+			handleMouse.hold['mouseY'] = event.clientY;
+		},
+
+		update: function() {
+			if (handleMouse.hold['down'] instanceof THREE.Vector2) {
+				var mouseX = handleMouse.hold['mouseX'];
+				var mouseY = handleMouse.hold['mouseY'];
+				var d = handleMouse.hold['down'];
+				selectBoxElem.style.width = mouseX - d.x;
+				selectBoxElem.style.height = mouseY - d.y;
+			}
 		}
 	};
 
