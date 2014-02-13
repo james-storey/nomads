@@ -243,8 +243,25 @@ var Program = function() {
 				var mouseX = handleMouse.hold['mouseX'];
 				var mouseY = handleMouse.hold['mouseY'];
 				var d = handleMouse.hold['down'];
-				selectBoxElem.style.width = mouseX - d.x;
-				selectBoxElem.style.height = mouseY - d.y;
+
+				if(mouseY < d.y) {
+					selectBoxElem.style.top = mouseY;
+					selectBoxElem.style.height = d.y - mouseY;
+				}
+				else { 
+					selectBoxElem.style.height = mouseY - d.y;
+				}
+
+				if(mouseX < d.x) {
+					selectBoxElem.style.left = mouseX;
+					selectBoxElem.style.width = d.x - mouseX;
+				}
+				else {
+					selectBoxElem.style.width = mouseX - d.x;
+				}
+
+				
+				
 			}
 		}
 	};
