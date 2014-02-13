@@ -278,25 +278,39 @@ var Program = function() {
 		},
 
 		update: function() {
+			var translateSpeed = cameraSpeed * 1.4;
+			var axis = new THREE.Vector3();
+			axis.copy(cameraCenter).sub(camera.position);
+			axis.y = 0;
+			axis.normalize();
+			rightAxis = new THREE.Vector3().copy(axis).cross(new THREE.Vector3(0,1,0)).normalize();
 			if (handleKey.hold["W".charCodeAt(0)] === true)
 			{
-				camera.position.z += -cameraSpeed;
-				cameraCenter.z += -cameraSpeed;
+				var forward = new THREE.Vector3().copy(axis);
+				forward.multiplyScalar(translateSpeed);
+				camera.position.add(forward);
+				cameraCenter.add(forward);
 			}
 			if (handleKey.hold["S".charCodeAt(0)] === true)
 			{
-				camera.position.z += cameraSpeed;
-				cameraCenter.z += cameraSpeed;
+				var back = new THREE.Vector3().copy(axis);
+				back.multiplyScalar(-translateSpeed);
+				camera.position.add(back);
+				cameraCenter.add(back);
 			}
 			if (handleKey.hold["A".charCodeAt(0)] === true)
 			{
-				camera.position.x += -cameraSpeed;
-				cameraCenter.x += -cameraSpeed;
+				var left = new THREE.Vector3().copy(rightAxis);
+				left.multiplyScalar(-translateSpeed);
+				camera.position.add(left);
+				cameraCenter.add(left);
 			}
 			if (handleKey.hold["D".charCodeAt(0)] === true)
 			{
-				camera.position.x += cameraSpeed;
-				cameraCenter.x += cameraSpeed;
+				var right = new THREE.Vector3().copy(rightAxis);
+				right.multiplyScalar(translateSpeed);
+				camera.position.add(right);
+				cameraCenter.add(right);
 			}
 
 			var rotateCamera = function(CCW) {
