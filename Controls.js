@@ -7,29 +7,47 @@ var handleMouse = function() {
 
 	var that = {};
 
+	var rayCastScreenLocation = function(x, y) {
+		var camera = Nomads.camera; 
+		var vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, 
+			-(y / window.innerHeight) * 2 + 1, 0.5);
+		projector.unprojectVector(vector, Nomads.camera);
+
+		var raycaster = new THREE.Raycaster(camera.position,
+			vector.sub(camera.position).normalize());
+		return raycaster;
+	};
+
 	var down = function(event) {
 		hold['down'] = new THREE.Vector2(event.clientX, event.clientY);
 		// anchor selection aid
-		selectBoxElem.style.top = event.clientY;
-		selectBoxElem.style.left = event.clientX;
+		if(event.which === 1) { //LEFT_BUTTON
+			selectBoxElem.style.top = event.clientY;
+			selectBoxElem.style.left = event.clientX;
+		}
+		else if(event.which === 3) { //RIGHT_BUTTON
+			//move selected to location
+			var raycaster = rayCastScreenLocation(event.clientX, event.clientY);
+			var intersectPoint = raycaster.intersectObject(Nomads.terrainMesh)[0].point;
+
+			// create move helper
+
+			// signal selected to deal with order
+		}
+		
 	};
 
 	var up = function(event) {
 		var down = hold['down'];
 		var camera = Nomads.camera;
-		var clickZone = 0.5;
+		var clickZone = 1;
 		for (var sO = selected.length - 1; sO >= 0; sO -= 1) {
 			(selected.pop()).deselect();
 		}
 		if (Math.abs(down.x - event.clientX) < clickZone && 
 			Math.abs(down.y - event.clientY) < clickZone) {
 			// raycast select
-			var vector = new THREE.Vector3((down.x / window.innerWidth) * 2 - 1, 
-				-(down.y / window.innerHeight) * 2 + 1, 0.5);
-			projector.unprojectVector(vector, camera);
-
-			var raycaster = new THREE.Raycaster(camera.position,
-				vector.sub(camera.position).normalize());
+			var raycaster = rayCastScreenLocation(down.x, down.y);
 			var intersect = [];
 			var sO = 0, intersectIndex;
 			for (sO = selectableObjects.length - 1; sO >= 0 && intersect.length < 1; sO -= 1) {

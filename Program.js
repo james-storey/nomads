@@ -10,7 +10,6 @@ var Program = function() {
 		Nomads.camera.translateZ(100);
 		Nomads.camera.translateY(100);
 		Nomads.camera.lookAt(new THREE.Vector3());
-		
 		Nomads.scene.add(Nomads.camera);
 
 		Nomads.renderer = Detector.webgl? new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
@@ -73,13 +72,13 @@ var Program = function() {
 	};
 
 	var init = function() {
-		
 		initThree();
 		initCannon();
 	};
 
 	var update = function() {
 		requestAnimationFrame( update );
+		UI.update();
         updatePhysics();
         handleKey.update();
         handleMouse.update();
@@ -94,7 +93,6 @@ var Program = function() {
 	var updatePhysics = function() {
 		world.step(timeStep);
 		// copy coords from CANNON objects to THREE child objects
-
 	};
 
 	var onResize = function() {
