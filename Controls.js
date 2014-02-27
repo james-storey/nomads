@@ -31,7 +31,8 @@ var handleMouse = function() {
 			var intersectPoint = raycaster.intersectObject(Nomads.terrainMesh)[0].point;
 
 			// create move helper
-
+			Nomads.UI.moveHelper(intersectPoint);
+			
 			// signal selected to deal with order
 		}
 		

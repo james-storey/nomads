@@ -48,11 +48,11 @@ var Program = function() {
 		Nomads.scene.add(aL);
 		Nomads.scene.add(dL);
 
-		var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
+		/*var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
 		var objGeo = new THREE.CubeGeometry( 10, 10, 10, 1, 1, 1);
 		var objMesh = new THREE.Mesh(objGeo, objMat);
 		objMesh.position.y = 5;
-		Nomads.scene.add(objMesh);
+		Nomads.scene.add(objMesh); */
 
 		Nomads.selectableObjects.push(new SelectableObject(objMesh));
 
@@ -78,7 +78,7 @@ var Program = function() {
 
 	var update = function() {
 		requestAnimationFrame( update );
-		UI.update();
+		Nomads.UI.update();
         updatePhysics();
         handleKey.update();
         handleMouse.update();
