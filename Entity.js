@@ -1,31 +1,37 @@
 // parts pattern of funtional inheritance
 
 // basic plumbing for gameObjects
-var Entity = function(that) {
-	var that = that || {};
-	var updateFuncs = that.updatFuncs === undefined ? [] : that.updateFuncs;
+var Entity = function(sub) {
+	var that = sub || {};
+	var updateFuncs;
+	if( that.updateFuncs === undefined ) {
+		updateFuncs = [];
+	}
+	else {
+		updateFuncs = that.updateFuncs;
+	}
 
 	var addUpdateFunc = function (f) {
 		updateFuncs.push(f);
 	};
 
 	var update = function () {
-		for(var f in updateFuncs) {
+		updateFuncs.forEach(function (f) {
 			f();
-		}
+		});
 	};
 	
 	that.update = update;
-	that.updateFunc = updateFunc;
+	that.addUpdateFunc = addUpdateFunc;
 	that.updateFuncs = updateFuncs;
 	return that;
 };
 
 // renders to the screen
-var Renderable = function (that, mesh) {
+var Renderable = function (mesh, sub) {
 	var Mesh, geometry, material, active = false;
 
-	var that = that || {};
+	var that = sub || {};
 	Entity(that);
 
 	if(mesh instanceof THREE.Mesh) {
@@ -61,10 +67,10 @@ var Renderable = function (that, mesh) {
 }
 
 // is selectable
-var Selectable = function(that) {
+var Selectable = function(sub) {
 	var selected = false;
 
-	var that = that || {};
+	var that = sub || {};
 	Entity(that);
 
 	that.addUpdateFunc(function() {
@@ -94,13 +100,13 @@ var Selectable = function(that) {
 };
 
 // can accept orders and move in the world
-var Moveable = function(that) {
-	var that = that || {};
+var Moveable = function(sub) {
+	var that = sub || {};
 	Entity(that);
 };
 
 // plays animations and keeps animation state
-var Animated = function(that) {
-	var that = that || {};
+var Animated = function(sub) {
+	var that = sub || {};
 	Entity(that);
 };

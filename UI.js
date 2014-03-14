@@ -31,4 +31,4 @@ var UI = function () {
 	that.update = update;
 
 	return that;
-}();
+};

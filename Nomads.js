@@ -6,6 +6,6 @@ var Nomads = {
 	renderer: null,
 	terrainMesh: null,
 	selectableObjects: [], 
-	selected: []
+	selected: [],
 	UI: UI()
 };
