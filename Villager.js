@@ -5,7 +5,6 @@ var Villager = function(sub) {
 
 	var that = sub || {};
 	Selectable(that);
-	Moveable(that);
 
 	// mesh initiation
 	var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
@@ -14,6 +13,7 @@ var Villager = function(sub) {
 	Mesh.position.y = 5;
 
 	Renderable(Mesh, that);
+	Moveable(that);
 
 
 	//Animated(that);

@@ -27,34 +27,23 @@ var Program = function() {
 
 		// init geo
 
-		var planeGeo = new THREE.PlaneGeometry(100, 100, 10, 10);
-		//for (var i = planeGeo.vertices.length - 1; i >= 0; i--) {
-		//	var v = planeGeo.vertices[i];
-		//	v.z = Math.sin(v.x/10)*5 - Math.cos(v.y/10)*5;
-		//};
-		planeGeo.computeFaceNormals();
-		planeGeo.computeVertexNormals();
+		var planeGeo = new THREE.CubeGeometry(100, 100, 300, 10, 10, 10);
+
 
 		var mat = new THREE.MeshLambertMaterial({color: 0xffffff});
 		Nomads.terrainMesh = new THREE.Mesh(planeGeo, mat);
-		Nomads.terrainMesh.position = new THREE.Vector3(0, 0, 0);
+		Nomads.terrainMesh.position = new THREE.Vector3(0, -150, 0);
 		Nomads.terrainMesh.rotateX(-Math.PI/2);
 		//terrainMesh.rotateY(1);
 		Nomads.scene.add(Nomads.terrainMesh);
 
 		var aL = new THREE.AmbientLight( 0x404040 );
 		var dL = new THREE.DirectionalLight({color: 0xffffff});
-		dL.position = new THREE.Vector3( 1, 1, 1 );
+		dL.position = new THREE.Vector3( 1, 1.5, 1 );
 		Nomads.scene.add(aL);
 		Nomads.scene.add(dL);
 
 		Nomads.selectableObjects.push(Villager());
-
-
-		/*var helper = new THREE.AxisHelper();
-		helper.scale = new THREE.Vector3(10, 10, 10);
-		helper.position.y = 1;
-		terrainMesh.add(helper);*/
 
 	};
 

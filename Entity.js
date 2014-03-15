@@ -103,6 +103,48 @@ var Selectable = function(sub) {
 var Moveable = function(sub) {
 	var that = sub || {};
 	Entity(that);
+	var threshold = 0.1;
+	var moveSpeed = 2.0;
+	var moving = false;
+	var target;
+
+	if(that.Mesh !== undefined) {
+		target = new THREE.Vector3().copy(that.Mesh.position); 
+	}
+	else {
+		target = new THREE.Vector3();
+	}
+
+	var move = function (loc) {
+		target = loc;
+	}
+
+	that.addUpdateFunc(function() {
+		if(that.Mesh === undefined) {
+			return;
+		}
+
+		var pos = that.Mesh.position;
+		var look = that.Mesh.rotation;
+		var dir = new THREE.Vector3().subVectors(pos, target);
+		if(dir.length > threshold) {
+			moving = true;
+			// turn toward target
+			that.Mesh.lookAt(target);
+
+			// move toward target
+			pos.add(dir.normalize().multiplyScalar(moveSpeed));
+		}
+		else
+		{
+			moving = false;
+		}
+	});
+
+	that.move = move
+	that.moving = moving;
+	that.moveSpeed = moveSpeed;
+
 };
 
 // plays animations and keeps animation state
