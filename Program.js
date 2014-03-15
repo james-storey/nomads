@@ -48,13 +48,7 @@ var Program = function() {
 		Nomads.scene.add(aL);
 		Nomads.scene.add(dL);
 
-		var objMat = new THREE.MeshLambertMaterial( {color: 0xda9680} );
-		var objGeo = new THREE.CubeGeometry( 10, 10, 10, 1, 1, 1);
-		var objMesh = new THREE.Mesh(objGeo, objMat);
-		objMesh.position.y = 5;
-
-		var ch = new Renderable(objMesh);
-		Nomads.selectableObjects.push(Selectable(ch));
+		Nomads.selectableObjects.push(Villager());
 
 
 		/*var helper = new THREE.AxisHelper();
