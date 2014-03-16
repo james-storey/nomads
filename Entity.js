@@ -103,10 +103,13 @@ var Selectable = function(sub) {
 var Moveable = function(sub) {
 	var that = sub || {};
 	Entity(that);
-	var threshold = 0;
 	var moveSpeed = 1.0;
+	var turnSpeed = 1.0;
 	var moving = false;
+	var turning = false;
 	var target;
+	var turnAxis;
+	var currentAngle;
 
 	if(that.Mesh !== undefined) {
 		target = new THREE.Vector3().copy(that.Mesh.position); 
@@ -116,23 +119,37 @@ var Moveable = function(sub) {
 	}
 
 	var move = function (loc) {
+		if(that.Mesh === undefined) {
+			return;
+		}
 		target = loc;
+		currentAngle = 0;
+		var dir = new THREE.Vector3().subVectors(target, that.Mesh.position);
+		turnAxis = that.Mesh.localToWorld(new THREE.Vector3(1,0,0)).cross(dir);
 	}
 
 	that.addUpdateFunc(function() {
 		if(that.Mesh === undefined) {
 			return;
 		}
-		threshold = moveSpeed;
+		var threshold = moveSpeed*moveSpeed;
 
 		var pos = that.Mesh.position;
-		var look = that.Mesh.rotation;
+		var look = new THREE.Vector3(that.Mesh.rotation.toArray());
 		var dir = new THREE.Vector3().subVectors(target,pos);
-		if(dir.length() > threshold) {
-			moving = true;
+		if(look.dot(dir) > 0.01) {
+			turning = true;
 			// turn toward target
-			that.Mesh.lookAt(target);
+			currentAngle += turnSpeed;
+			that.Mesh.rotateOnAxis(turnAxis, currentAngle);
 
+		}
+		else {
+			that.Mesh.lookAt(target);
+		}
+
+		if(dir.lengthSq() > threshold) {
+			moving = true;
 			// move toward target
 			pos.add(dir.normalize().multiplyScalar(moveSpeed));
 		}
