@@ -103,8 +103,8 @@ var Selectable = function(sub) {
 var Moveable = function(sub) {
 	var that = sub || {};
 	Entity(that);
-	var threshold = 0.1;
-	var moveSpeed = 2.0;
+	var threshold = 0;
+	var moveSpeed = 1.0;
 	var moving = false;
 	var target;
 
@@ -123,11 +123,12 @@ var Moveable = function(sub) {
 		if(that.Mesh === undefined) {
 			return;
 		}
+		threshold = moveSpeed;
 
 		var pos = that.Mesh.position;
 		var look = that.Mesh.rotation;
-		var dir = new THREE.Vector3().subVectors(pos, target);
-		if(dir.length > threshold) {
+		var dir = new THREE.Vector3().subVectors(target,pos);
+		if(dir.length() > threshold) {
 			moving = true;
 			// turn toward target
 			that.Mesh.lookAt(target);

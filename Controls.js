@@ -40,6 +40,17 @@ var handleMouse = function() {
 			selected.push(selectableObjects[intersectIndex]);
 			selectableObjects[intersectIndex].select();
 		}
+		else {
+			// move
+			intersect = raycaster.intersectObject(Nomads.terrainMesh);
+			var target;
+			if(intersect.length > 0) {
+				target = intersect[0].point;
+				target.setY(selectableObjects[0].Mesh.position.y);
+				selectableObjects[0].move(target)
+			}
+			
+		}
 		hold['down'] = null;
 	};
 
