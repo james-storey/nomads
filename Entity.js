@@ -104,12 +104,13 @@ var Moveable = function(sub) {
 	var that = sub || {};
 	Entity(that);
 	var moveSpeed = 1.0;
-	var turnSpeed = 1.0;
+	var turnSpeed = 0.04;
 	var moving = false;
 	var turning = false;
 	var target;
-	var turnAxis;
-	var currentAngle;
+	var turnAxis = new THREE.Vector3( 0, 1, 0 );;
+	var previousLook = new THREE.Vector3(1);
+	var logCount = 0;
 
 	if(that.Mesh !== undefined) {
 		target = new THREE.Vector3().copy(that.Mesh.position); 
@@ -123,9 +124,40 @@ var Moveable = function(sub) {
 			return;
 		}
 		target = loc;
-		currentAngle = 0;
-		var dir = new THREE.Vector3().subVectors(target, that.Mesh.position);
-		turnAxis = that.Mesh.localToWorld(new THREE.Vector3(1,0,0)).cross(dir);
+		
+	}
+
+	var turnAngle = function (from, to) {
+		from.normalize();
+		to.normalize();
+
+		var angleFrom = Math.atan2(from.z, from.x);
+		var angleTo = Math.atan2(to.z, to.x);
+		
+		var diff = Math.abs(angleFrom - angleTo);
+		if(diff > Math.PI) {
+			if(angleFrom < angleTo) {
+				angleFrom += 2 * Math.PI;
+			}
+			else {
+				angleTo += 2 * Math.PI;
+			}
+		}
+
+		var signedDiff = angleFrom - angleTo;
+		if(signedDiff > turnSpeed) {
+			// origin is CCW from the target
+			// turn CW
+			turning = true;
+			that.Mesh.rotateOnAxis(turnAxis, turnSpeed);
+
+		}
+		else if(signedDiff < -turnSpeed) {
+			// origin is CW from target
+			// turn CCW
+			turning = true;
+			that.Mesh.rotateOnAxis(turnAxis, -turnSpeed);
+		}
 	}
 
 	that.addUpdateFunc(function() {
@@ -135,23 +167,18 @@ var Moveable = function(sub) {
 		var threshold = moveSpeed*moveSpeed;
 
 		var pos = that.Mesh.position;
-		var look = new THREE.Vector3(that.Mesh.rotation.toArray());
-		var dir = new THREE.Vector3().subVectors(target,pos);
-		if(look.dot(dir) > 0.01) {
-			turning = true;
-			// turn toward target
-			currentAngle += turnSpeed;
-			that.Mesh.rotateOnAxis(turnAxis, currentAngle);
+		var moveDir = new THREE.Vector3().subVectors(target,pos);
 
-		}
-		else {
-			that.Mesh.lookAt(target);
-		}
+		previousLook = that.Mesh.localToWorld(new THREE.Vector3(1));
+		previousLook = previousLook.sub(that.Mesh.position);
+		previousLook.setY(0);
 
-		if(dir.lengthSq() > threshold) {
+		turnAngle(previousLook, moveDir);
+
+		if(moveDir.lengthSq() > threshold) {
 			moving = true;
 			// move toward target
-			pos.add(dir.normalize().multiplyScalar(moveSpeed));
+			pos.add(moveDir.normalize().multiplyScalar(moveSpeed));
 		}
 		else
 		{
