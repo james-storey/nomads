@@ -104,7 +104,7 @@ var Moveable = function(sub) {
 	var that = sub || {};
 	Entity(that);
 	var moveSpeed = 1.0;
-	var turnSpeed = 0.04;
+	var turnSpeed = 0.2;
 	var moving = false;
 	var turning = false;
 	var target;
@@ -128,11 +128,11 @@ var Moveable = function(sub) {
 	}
 
 	var turnAngle = function (from, to) {
-		from.normalize();
-		to.normalize();
+		var fromCopy = new THREE.Vector3().copy(from).normalize();
+		var toCopy = new THREE.Vector3().copy(to).normalize();
 
-		var angleFrom = Math.atan2(from.z, from.x);
-		var angleTo = Math.atan2(to.z, to.x);
+		var angleFrom = Math.atan2(fromCopy.z, fromCopy.x);
+		var angleTo = Math.atan2(toCopy.z, toCopy.x);
 		
 		var diff = Math.abs(angleFrom - angleTo);
 		if(diff > Math.PI) {
