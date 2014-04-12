@@ -1,6 +1,11 @@
 
+var AssetMap = {
+
+};
+
 var Program = function() {
 	var world, body, mass, shape, timeStep = 1/60;
+	var lScreen;
 
 	var that = {};
 
@@ -56,12 +61,18 @@ var Program = function() {
 	};
 
 	var init = function() {
-		initThree();
-		initCannon();
+		var afterLoad = function(map) {
+			AssetMap = map;
+			initThree();
+			initCannon();
+		};
+
+		lScreen = new LoadingScreen(window.innerWidth, window.innerHeight, AssetMap, afterLoad);
 	};
 
 	var update = function() {
 		requestAnimationFrame( update );
+		lScreen.animate();
 		Nomads.UI.update();
         	updatePhysics();
         	handleKey.update();
