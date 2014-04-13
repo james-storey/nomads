@@ -5,7 +5,7 @@ var AssetMap = {
 
 var Program = function() {
 	var world, body, mass, shape, timeStep = 1/60;
-	var lScreen;
+	var lScreen, tGeo;
 
 	var that = {};
 
@@ -32,15 +32,8 @@ var Program = function() {
 
 		// init geo
 
-		var planeGeo = new THREE.CubeGeometry(100, 100, 300, 10, 10, 10);
-
-
-		var mat = new THREE.MeshLambertMaterial({color: 0xffffff});
-		Nomads.terrainMesh = new THREE.Mesh(planeGeo, mat);
-		Nomads.terrainMesh.position = new THREE.Vector3(0, -150, 0);
-		Nomads.terrainMesh.rotateX(-Math.PI/2);
-		//terrainMesh.rotateY(1);
-		Nomads.scene.add(Nomads.terrainMesh);
+		tGeo = TerrainGeo();
+		tGeo.setLocation(0, 0);
 
 		var aL = new THREE.AmbientLight( 0x404040 );
 		var dL = new THREE.DirectionalLight({color: 0xffffff});
@@ -48,7 +41,9 @@ var Program = function() {
 		Nomads.scene.add(aL);
 		Nomads.scene.add(dL);
 
-		Nomads.selectableObjects.push(Villager());
+		var villager = Villager();
+		villager.Mesh.add(tGeo.Mesh);
+		Nomads.selectableObjects.push(villager);
 
 	};
 
@@ -73,12 +68,17 @@ var Program = function() {
 	var update = function() {
 		requestAnimationFrame( update );
 		lScreen.animate();
+		if(tGeo !== undefined)
+		{
+			var tpos = tGeo.Mesh.localToWorld(tGeo.Mesh.position.clone());
+			tGeo.setLocation(tpos.x, tpos.z);
+		}
 		Nomads.UI.update();
-        	updatePhysics();
-        	handleKey.update();
-        	handleMouse.update();
-        	Nomads.selectableObjects.forEach(function(obj){obj.update();});
-        	render();
+    	updatePhysics();
+    	handleKey.update();
+    	handleMouse.update();
+    	Nomads.selectableObjects.forEach(function(obj){obj.update();});
+    	render();
 	};
 
 	var render = function() {

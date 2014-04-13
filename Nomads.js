@@ -8,4 +8,5 @@ var Nomads = {
 	selectableObjects: [], 
 	selected: [],
 	UI: UI(),
+	worldLoc: null
 };
