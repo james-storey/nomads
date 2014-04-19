@@ -12,7 +12,7 @@ var handleMouse = function() {
 			-(y / window.innerHeight) * 2 + 1, 0.5);
 		projector.unprojectVector(vector, Nomads.camera);
 
-		var raycaster = new THREE.Raycaster(camera.position,
+		var raycaster = new THREE.Raycaster( camera.position,
 			vector.sub(camera.position).normalize());
 		return raycaster;
 	};
@@ -42,7 +42,7 @@ var handleMouse = function() {
 		}
 		else {
 			// move
-			intersect = raycaster.intersectObject(Nomads.terrainMesh);
+			intersect = raycaster.intersectObject(Nomads.terrainMesh, true);
 			var target;
 			if(intersect.length > 0) {
 				target = intersect[0].point;

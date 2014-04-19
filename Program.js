@@ -43,7 +43,9 @@ var Program = function() {
 
 		var villager = Villager();
 		villager.Mesh.add(tGeo.Mesh);
+		//villager.Mesh.add(Nomads.camera);
 		Nomads.selectableObjects.push(villager);
+		Nomads.worldLoc = new THREE.Vector2( 0, 0 );
 
 	};
 
@@ -70,8 +72,10 @@ var Program = function() {
 		lScreen.animate();
 		if(tGeo !== undefined)
 		{
-			var tpos = tGeo.Mesh.localToWorld(tGeo.Mesh.position.clone());
-			tGeo.setLocation(tpos.x, tpos.z);
+			//var tpos = tGeo.Mesh.localToWorld(tGeo.Mesh.position.clone());
+			//tGeo.setLocation(tpos.x, tpos.z);
+			Nomads.worldLoc.x += 0.7;
+			tGeo.setLocation(Nomads.worldLoc.x, Nomads.worldLoc.y);
 		}
 		Nomads.UI.update();
     	updatePhysics();

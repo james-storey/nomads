@@ -15,7 +15,6 @@ var Villager = function(sub) {
 	Renderable(Mesh, that);
 	Moveable(that);
 
-
 	//Animated(that);
 
 	return that;
